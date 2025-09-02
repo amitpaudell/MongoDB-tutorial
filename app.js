@@ -14,3 +14,5 @@ connectToDB((err) => {
     db = getDB();
   }
 });
+
+//Fetching the json data
