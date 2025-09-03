@@ -1,6 +1,8 @@
 const express = require('express');
 const { connectToDB, getDB } = require('./db');
+const { ObjectId } = require('mongodb');
 const app = express();
+app.use(express.json());
 
 //db connection
 let db;
@@ -29,5 +31,34 @@ app.get('/books', (req, res, next) => {
     })
     .catch(() => {
       res.status(500).json({ error: `Couldn't fetch the documents` });
+    });
+});
+
+app.get('/books/:id', (req, res) => {
+  if (ObjectId.isValid(req.params.id)) {
+    db.collection('books')
+      .findOne({ _id: new ObjectId(req.params.id) })
+      .then((doc) => {
+        res.status(200).json(doc);
+      })
+      .catch((error) => {
+        res.status(500).json({ error: `Couldn't fetch the document` });
+      });
+  } else {
+    res.status(500).json({ error: 'Not a valid doc id' });
+  }
+});
+
+//Handling post request
+app.post('/books', (req, res) => {
+  const book = req.body;
+
+  db.collection('books')
+    .insertOne(book)
+    .then((result) => {
+      res.status(201).json(result);
+    })
+    .catch((err) => {
+      res.status(500).json({ err: `Couldn't create a new document` });
     });
 });
